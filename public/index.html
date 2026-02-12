@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>> 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 | Panel</title>
+    <style>
+        body { background: #0a0a0a; color: #00ffcc; font-family: 'Courier New', monospace; text-align: center; padding-top: 50px; }
+        .box { border: 2px solid #00ffcc; display: inline-block; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px #00ffcc; }
+        .code { font-size: 3em; color: #fff; text-shadow: 0 0 10px #00ffcc; letter-spacing: 5px; margin: 20px 0; }
+        .status { color: #25d366; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>> 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝</h1>
+        <p>STATUT SYSTÈME : <span class="status">ACTIF ✅</span></p>
+        <hr color="#00ffcc">
+        <h3>CODE DE JUMELAGE :</h3>
+        <div class="code" id="pairCode">CHARGEMENT...</div>
+        <p>Entrez ce code dans WhatsApp > Appareils connectés</p>
+    </div>
+
+    <script>
+        // Rafraîchit le code toutes les 5 secondes
+        setInterval(async () => {
+            const res = await fetch('/get-code');
+            const data = await res.json();
+            document.getElementById('pairCode').innerText = data.code;
+        }, 5000);
+    </script>
+</body>
+</html>
