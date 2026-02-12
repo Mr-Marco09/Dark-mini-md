@@ -3,15 +3,7 @@
 <p align="center">
   <img src="https://i.postimg.cc/qqsXnp8w/L-homme-au-regard-bleu-lumineux.png" width="200" height="200" alt="Dark-Mini-MD">
 </p>
-<div class="social-links">
-            <a href="https://wa.me/50941131299" target="_blank" class="social-btn btn-wa">
-                <i class="fab fa-whatsapp"></i> SUPPORT
-            </a>
-            <a href="https://whatsapp.com/channel/0029VbASWFzHFxP6cbTkkz08" target="_blank" class="social-btn btn-channel">
-                <i class="fas fa-bullhorn"></i> CHAÎNE
-            </a>
-        </div>
-<p align="center">
+<a align="false">
   <a href="#"><img src="https://img.shields.io" width="200 alt="Version"></a>
   <a href="#"><img src="https://img.shields.io" width="200 alt="Maintenance"></a>
   <a href="https://whatsapp.com/channel/0029VbASWFzHFxP6cbTkkz08"><img src="https://i.postimg.cc/v8fKxjGG/IMG-20260201-WA0107.jpg" width="200 alt="Canal"></a>
