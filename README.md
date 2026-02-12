@@ -1,16 +1,41 @@
 # > 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 🤖⚡
 
-<p align="center">
-  <img src="https://i.postimg.cc/qqsXnp8w/L-homme-au-regard-bleu-lumineux.png" width="200" height="200" alt="Dark-Mini-MD">
-</p>
-<a align="false">
-  <a href="#"><img src="https://img.shields.io" width="200 alt="Version"></a>
-  <a href="#"><img src="https://img.shields.io" width="200 alt="Maintenance"></a>
-  <a href="https://whatsapp.com/channel/0029VbASWFzHFxP6cbTkkz08"><img src="https://i.postimg.cc/v8fKxjGG/IMG-20260201-WA0107.jpg" width="200 alt="Canal"></a>
-</p>
 
----
-div class="container">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>> 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 | Control Panel</title>
+    <!-- Chargement des icônes pour les boutons Support/Canal -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com">
+    <style>
+        :root { --neon: #00ffcc; --dark: #0a0a0a; --glass: rgba(255, 255, 255, 0.05); }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
+        .container { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(0, 255, 204, 0.2); padding: 40px; border-radius: 20px; box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); width: 90%; max-width: 450px; text-align: center; position: relative; }
+        .bot-logo { width: 80px; height: 80px; border-radius: 15px; border: 2px solid var(--neon); box-shadow: 0 0 15px var(--neon); margin-bottom: 15px; transition: 0.5s; }
+        .bot-logo:hover { transform: rotate(10deg) scale(1.1); }
+        h1 { font-size: 1.8em; margin: 10px 0; color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+        p.desc { font-size: 0.9em; color: #bbb; line-height: 1.6; margin-bottom: 25px; }
+        
+        .setup-area input { background: #151515; border: 1px solid #333; color: white; padding: 15px; width: 85%; border-radius: 10px; margin-bottom: 20px; font-size: 1.1em; text-align: center; transition: 0.3s; }
+        .setup-area input:focus { border-color: var(--neon); outline: none; box-shadow: 0 0 10px var(--neon); }
+        .btn-gen { background: var(--neon); color: black; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; transition: 0.3s; }
+        .btn-gen:hover { background: white; transform: translateY(-3px); }
+
+        .code-area { display: none; }
+        .code-box { font-size: 2.2em; font-weight: bold; letter-spacing: 5px; color: white; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 10px; border: 1px dashed var(--neon); }
+        .btn-copy { background: #333; color: white; border: 1px solid #555; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+
+        .social-links { display: flex; justify-content: center; gap: 15px; margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; }
+        .social-btn { text-decoration: none; padding: 10px 15px; border-radius: 8px; font-size: 0.9em; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .btn-wa { background: #25d366; color: white; }
+        .btn-channel { background: #0088cc; color: white; }
+        .social-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+    </style>
+</head>
+<body>
+    <div class="container">
         <img src="https://i.postimg.cc/qqsXnp8w/L-homme-au-regard-bleu-lumineux.png" class="bot-logo" alt="Logo">
         
         <h1>> 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝</h1>
@@ -37,7 +62,48 @@ div class="container">
         <p id="info" style="font-size: 0.7em; margin-top: 20px; color: #555;">© 2026 DARK-MODS-CORP | MR MARCO</p>
     </div>
 
-____
+    <script>
+        async function getPairing() {
+            const num = document.getElementById('phone').value;
+            if(!num) return alert("Numéro requis !");
+            
+            const btn = document.getElementById('mainBtn');
+            btn.innerText = "CHARGEMENT...";
+            btn.disabled = true;
+            
+            try {
+                // Route modifiée pour correspondre au server.js (/pair?number=)
+                const res = await fetch(`/pair?number=${num.replace(/[^0-9]/g, '')}`);
+                const data = await res.json();
+                
+                if(data.code) {
+                    document.getElementById('displayCode').innerText = data.code;
+                    document.getElementById('setup-area').style.display = "none";
+                    document.getElementById('code-area').style.display = "block";
+                } else {
+                    alert("Erreur: " + (data.error || "Problème de génération"));
+                    btn.innerText = "GÉNÉRER LE CODE";
+                    btn.disabled = false;
+                }
+            } catch(e) {
+                alert("Erreur de connexion au serveur. Réessayez.");
+                btn.innerText = "GÉNÉRER LE CODE";
+                btn.disabled = false;
+            }
+        }
+
+        function copyIt() {
+            const code = document.getElementById('displayCode').innerText;
+            navigator.clipboard.writeText(code);
+            alert("Code copié ! ✅");
+        }
+    </script>
+</body>
+</html>
+
+    
+---
+__
 
 ## 🌟 DESCRIPTION
 **> 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝** est un bot WhatsApp ultra-rapide, modulaire et élégant. Conçu avec une interface système unique ("Fake Status") et des boutons simulés pour une expérience utilisateur haut de gamme.
