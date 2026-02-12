@@ -1,27 +1,23 @@
-const { 
-    default: makeWASocket, 
-    useMultiFileAuthState, 
-    DisconnectReason, 
-    makeCacheableSignalKeyStore 
-} = require("@whiskeysockets/baileys");
+const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore } = require("@whiskeysockets/baileys");
+const express = require('express');
+const path = require('path');
 const pino = require("pino");
-const fs = require('fs');
-const readline = require('readline');
 const { processEvents } = require("./events");
 
-const question = (text) => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    return new Promise((resolve) => {
-        rl.question(text, (answer) => {
-            rl.close();
-            resolve(answer);
-        });
-    });
-};
+const app = express();
+const port = process.env.PORT || 3000;
+let currentPairingCode = "PAS DE CODE";
+
+// Sert les fichiers statiques du dossier "public"
+app.use(express.static('public'));
+
+// API pour que le HTML récupère le code
+app.get('/get-code', (req, res) => {
+    res.json({ code: currentPairingCode });
+});
 
 async function startDarkBot() {
     const { state, saveCreds } = await useMultiFileAuthState('session_dark');
-
     const sock = makeWASocket({
         logger: pino({ level: 'silent' }),
         printQRInTerminal: false,
@@ -33,36 +29,31 @@ async function startDarkBot() {
     });
 
     if (!sock.authState.creds.registered) {
-        console.log("\n--- SYSTÈME D'APPAIRAGE > 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 ---");
-        const phoneNumber = await question("Entrez votre numéro WhatsApp (ex: 50941131299) :\n> ");
-        const code = await sock.requestPairingCode(phoneNumber.replace(/[^0-9]/g, ''));
-        console.log(`\n✅ VOTRE CODE : ${code.match(/.{1,4}/g).join('-')}\n`);
+        // Remplace par ton numéro ou utilise une variable d'env
+        const phoneNumber = "50941131299"; 
+        setTimeout(async () => {
+            let code = await sock.requestPairingCode(phoneNumber);
+            currentPairingCode = code.match(/.{1,4}/g).join('-');
+            console.log(`🔑 CODE GÉNÉRÉ : ${currentPairingCode}`);
+        }, 5000);
     }
 
     sock.ev.on('creds.update', saveCreds);
-
     sock.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0]; 
-        if (!msg || !msg.message || msg.key.fromMe) return;
-        await processEvents(sock, msg, 'chat');
+        if (!m.messages[0].message || m.messages[0].key.fromMe) return;
+        await processEvents(sock, m.messages[0], 'chat');
     });
 
-    sock.ev.on('group-participants.update', async (g) => {
-        await processEvents(sock, g, 'group');
-    });
-
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
-        if (connection === 'close') {
-            const reason = lastDisconnect.error?.output?.statusCode;
-            if (reason !== DisconnectReason.loggedOut) {
-                console.log("Connexion perdue, reconnexion...");
-                startDarkBot();
-            }
-        } else if (connection === 'open') {
-            console.log('\n✅ > 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 : CONNECTÉ ET OPÉRATIONNEL !');
+    sock.ev.on('connection.update', ({ connection }) => {
+        if (connection === 'open') {
+            currentPairingCode = "CONNECTÉ ✅";
+            console.log("✅ BOT CONNECTÉ !");
         }
+        if (connection === 'close') startDarkBot();
     });
 }
 
-startDarkBot();
+app.listen(port, () => {
+    console.log(`🌐 Serveur Web : http://localhost:${port}`);
+    startDarkBot();
+});
