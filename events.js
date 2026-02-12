@@ -12,20 +12,28 @@ async function processEvents(sock, m, type) {
         // 1. Automatismes (/fichiers)
         const autoFiles = fs.readdirSync('./fichiers').filter(f => f.endsWith('.js'));
         for (const file of autoFiles) {
-            const fPath = path.join(__dirname, 'fichiers', file);
-            delete require.cache[require.resolve(fPath)];
-            require(fPath)(sock, m, body);
+            try {
+                const fPath = path.join(__dirname, 'fichiers', file);
+                delete require.cache[require.resolve(fPath)];
+                require(fPath)(sock, m, body);
+            } catch (e) {
+                console.error(`Erreur dans l'automatisme ${file}:`, e);
+            }
         }
 
         // 2. Commandes (/plugins)
         if (isCmd) {
             const pluginFiles = fs.readdirSync('./plugins').filter(f => f.endsWith('.js'));
             for (const file of pluginFiles) {
-                const pPath = path.join(__dirname, 'plugins', file);
-                delete require.cache[require.resolve(pPath)];
-                const plugin = require(pPath);
-                if (plugin.name === command || (plugin.alias && plugin.alias.includes(command))) {
-                    await plugin.execute(sock, m, body);
+                try {
+                    const pPath = path.join(__dirname, 'plugins', file);
+                    delete require.cache[require.resolve(pPath)];
+                    const plugin = require(pPath);
+                    if (plugin.name === command || (plugin.alias && plugin.alias.includes(command))) {
+                        await plugin.execute(sock, m, body);
+                    }
+                } catch (e) {
+                    console.error(`Erreur dans le plugin ${file}:`, e);
                 }
             }
         }
@@ -34,8 +42,12 @@ async function processEvents(sock, m, type) {
     if (type === 'group') {
         const welcomePath = path.join(__dirname, 'fichiers', 'group_welcome.js');
         if (fs.existsSync(welcomePath)) {
-            delete require.cache[require.resolve(welcomePath)];
-            require(welcomePath)(sock, m);
+            try {
+                delete require.cache[require.resolve(welcomePath)];
+                require(welcomePath)(sock, m);
+            } catch (e) {
+                console.error(`Erreur dans group_welcome.js:`, e);
+            }
         }
     }
 }
