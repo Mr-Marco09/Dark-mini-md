@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>> 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 | Control Panel</title>
+    <!-- Chargement des icônes pour les boutons Support/Canal -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com">
     <style>
         :root { --neon: #00ffcc; --dark: #0a0a0a; --glass: rgba(255, 255, 255, 0.05); }
@@ -14,18 +15,15 @@
         h1 { font-size: 1.8em; margin: 10px 0; color: var(--neon); text-shadow: 0 0 10px var(--neon); }
         p.desc { font-size: 0.9em; color: #bbb; line-height: 1.6; margin-bottom: 25px; }
         
-        /* Input & Pairing */
         .setup-area input { background: #151515; border: 1px solid #333; color: white; padding: 15px; width: 85%; border-radius: 10px; margin-bottom: 20px; font-size: 1.1em; text-align: center; transition: 0.3s; }
         .setup-area input:focus { border-color: var(--neon); outline: none; box-shadow: 0 0 10px var(--neon); }
         .btn-gen { background: var(--neon); color: black; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; transition: 0.3s; }
         .btn-gen:hover { background: white; transform: translateY(-3px); }
 
-        /* Code Display */
         .code-area { display: none; }
         .code-box { font-size: 2.2em; font-weight: bold; letter-spacing: 5px; color: white; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 10px; border: 1px dashed var(--neon); }
         .btn-copy { background: #333; color: white; border: 1px solid #555; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
 
-        /* Social Buttons */
         .social-links { display: flex; justify-content: center; gap: 15px; margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; }
         .social-btn { text-decoration: none; padding: 10px 15px; border-radius: 8px; font-size: 0.9em; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
         .btn-wa { background: #25d366; color: white; }
@@ -35,14 +33,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- Photo du bot en petit carré -->
         <img src="https://i.postimg.cc/qqsXnp8w/L-homme-au-regard-bleu-lumineux.png" class="bot-logo" alt="Logo">
         
         <h1>> 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝</h1>
-        <p class="desc">bot whatsapp </p>by ©Mr Marco.</p>
+        <p class="desc">Bot WhatsApp par ©Mr Marco.</p>
 
         <div id="setup-area" class="setup-area">
-            <input type="text" id="phone" placeholder="Entrez votre numéro (ex: 509...)">
+            <input type="text" id="phone" placeholder="Numéro (ex: 509...)">
             <button onclick="getPairing()" id="mainBtn" class="btn-gen">GÉNÉRER LE CODE <i class="fas fa-bolt"></i></button>
         </div>
 
@@ -51,7 +48,6 @@
             <button onclick="copyIt()" class="btn-copy"><i class="fas fa-copy"></i> COPIER</button>
         </div>
 
-        <!-- Boutons Support & Chaîne -->
         <div class="social-links">
             <a href="https://wa.me/50941131299" target="_blank" class="social-btn btn-wa">
                 <i class="fab fa-whatsapp"></i> SUPPORT
@@ -68,26 +64,35 @@
             const num = document.getElementById('phone').value;
             if(!num) return alert("Numéro requis !");
             
-            document.getElementById('mainBtn').innerText = "CHARGEMENT...";
+            const btn = document.getElementById('mainBtn');
+            btn.innerText = "CHARGEMENT...";
+            btn.disabled = true;
             
             try {
-                const res = await fetch(`/get-pairing?phone=${num}`);
+                // Route modifiée pour correspondre au server.js (/pair?number=)
+                const res = await fetch(`/pair?number=${num.replace(/[^0-9]/g, '')}`);
                 const data = await res.json();
                 
                 if(data.code) {
                     document.getElementById('displayCode').innerText = data.code;
                     document.getElementById('setup-area').style.display = "none";
                     document.getElementById('code-area').style.display = "block";
+                } else {
+                    alert("Erreur: " + (data.error || "Problème de génération"));
+                    btn.innerText = "GÉNÉRER LE CODE";
+                    btn.disabled = false;
                 }
             } catch(e) {
-                alert("Erreur serveur, réessayez.");
+                alert("Erreur de connexion au serveur. Réessayez.");
+                btn.innerText = "GÉNÉRER LE CODE";
+                btn.disabled = false;
             }
         }
 
         function copyIt() {
             const code = document.getElementById('displayCode').innerText;
             navigator.clipboard.writeText(code);
-            alert("Code copié !");
+            alert("Code copié ! ✅");
         }
     </script>
 </body>
