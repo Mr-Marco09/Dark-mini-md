@@ -2,73 +2,65 @@ const {
     default: makeWASocket, 
     useMultiFileAuthState, 
     DisconnectReason, 
-    fetchLatestBaileysVersion, 
     makeCacheableSignalKeyStore 
 } = require("@whiskeysockets/baileys");
 const pino = require("pino");
-const readline = require('readline');
+const fs = require('fs');
+const readline = require('readline'); // Module intégré, rien à installer !
 const { processEvents } = require("./events");
 
-// Configuration pour l'entrée du numéro de téléphone
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
+// Fonction de question optimisée pour ne pas crasher sur Katabump
+const question = (text) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    return new Promise((resolve) => {
+        rl.question(text, (answer) => {
+            rl.close();
+            resolve(answer);
+        });
+    });
+};
 
 async function startDarkBot() {
     const { state, saveCreds } = await useMultiFileAuthState('session_dark');
-    const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
-        version,
         logger: pino({ level: 'silent' }),
-        printQRInTerminal: false, // Désactivé au profit du Pairing Code
+        printQRInTerminal: false, // On utilise le code à la place
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
         },
-        browser: ["Ubuntu", "Chrome", "20.0.04"], // Requis pour le pairing
-        markOnlineOnConnect: true,
+        browser: ["Ubuntu", "Chrome", "20.0.04"],
     });
 
-    // --- LOGIQUE DE CONNEXION PAR CODE (PAIRING CODE) ---
+    // Demande du Pairing Code si la session n'existe pas
     if (!sock.authState.creds.registered) {
         console.log("\n--- SYSTÈME D'APPAIRAGE > 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 ---");
-        const phoneNumber = await question("Veuillez entrer votre numéro WhatsApp (ex: 50941131299) :\n> ");
+        const phoneNumber = await question("Entrez votre numéro WhatsApp (ex: 50941131299) :\n> ");
         const code = await sock.requestPairingCode(phoneNumber.replace(/[^0-9]/g, ''));
-        console.log(`\n✅ VOTRE CODE DE JUMELAGE : ${code.match(/.{1,4}/g).join('-')}\n`);
-        console.log("Ouvrez WhatsApp > Appareils connectés > Lier un appareil > Lier avec le numéro de téléphone.");
+        console.log(`\n✅ VOTRE CODE : ${code.match(/.{1,4}/g).join('-')}\n`);
     }
 
     sock.ev.on('creds.update', saveCreds);
 
-    // --- GESTION DES ÉVÉNEMENTS ---
+    // Écoute des messages
     sock.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0];
+        const msg = m.messages[0]; // On prend le premier message du tableau
         if (!msg.message || msg.key.fromMe) return;
         await processEvents(sock, msg, 'chat');
     });
 
-    sock.ev.on('group-participants.update', async (groupUpdate) => {
-        await processEvents(sock, groupUpdate, 'group');
-    });
-
-    // --- GESTION DE LA CONNEXION ---
+    // Gestion de la connexion
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
-
         if (connection === 'close') {
-            let reason = lastDisconnect.error?.output?.statusCode;
-            console.log(`Connexion fermée. Raison : ${reason}`);
-            
+            const reason = lastDisconnect.error?.output?.statusCode;
             if (reason !== DisconnectReason.loggedOut) {
-                console.log("Tentative de reconnexion...");
+                console.log("Connexion perdue, reconnexion en cours...");
                 startDarkBot();
-            } else {
-                console.log("Session déconnectée. Veuillez supprimer le dossier session_dark et recommencer.");
             }
         } else if (connection === 'open') {
-            console.log('\n╔════════════════════════════════════════╗');
-            console.log('║  ✅ > 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 CONNECTÉ AVEC SUCCÈS ║');
-            console.log('╚════════════════════════════════════════╝\n');
+            console.log('\n✅ > 𝐃𝐚𝐫𝐤-𝐦𝐢𝐧𝐢-𝐦𝐝 : CONNECTÉ ET OPÉRATIONNEL !');
         }
     });
 }
