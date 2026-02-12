@@ -1,21 +1,22 @@
+const { config } = require('../lib');
+
 module.exports = async (sock, msg, body) => {
     const from = msg.key.remoteJid;
     const text = body.trim();
     
-    // On vérifie si on répond à un message qui contient le titre du plugin
-    const quotedMsg = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-    const isDarkPlay = quotedMsg?.imageMessage?.caption?.includes("DARK-SYSTEM PLAY");
+    // Vérifie si on répond à un message du bot contenant le menu play
+    const isReplyToPlay = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage?.caption?.includes("DARK-PLAY SYSTEM");
 
-    if (isDarkPlay) {
+    if (isReplyToPlay) {
         if (text === "1") {
-            await sock.sendMessage(from, { text: "⚡ *CHARGEMENT DE L'AUDIO (MP3)...* ⏳" });
-            // Ici tu appelleras ta fonction de téléchargement ytdl
+            await sock.sendMessage(from, { text: "📥 *TÉLÉCHARGEMENT DE L'AUDIO...*\n\n" + config.footer });
+            // Logique de téléchargement ici
         } 
         else if (text === "2") {
-            await sock.sendMessage(from, { text: "⚡ *CONVERSION EN DOCUMENT...* 📄" });
+            await sock.sendMessage(from, { text: "📂 *PRÉPARATION DU DOCUMENT...*\n\n" + config.footer });
         } 
         else if (text === "3") {
-            await sock.sendMessage(from, { text: "📝 *RÉCUPÉRATION DES PAROLES...*" });
+            await sock.sendMessage(from, { text: "📝 *RÉCUPÉRATION DES PAROLES...*\n\n" + config.footer });
         }
     }
 };
