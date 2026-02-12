@@ -1,39 +1,52 @@
-//////server.js////
-
 const express = require("express");
-const path = require("path"); // Ajout nécessaire pour envoyer le fichier HTML
+const path = require("path");
 const config = require("./config.json");
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
 const startServer = (marcoInstance) => {
     
-    // 1. AFFICHER TON DESIGN MATRIX
+    // Sert les fichiers statiques (images, css) si vous en avez
+    app.use(express.static(path.join(__dirname, 'public')));
+
+    // 1. Affiche votre fichier index.html
     app.get('/', (req, res) => {
+        // Vérifie si index.html est à la racine ou dans /public
         res.sendFile(path.join(__dirname, 'index.html'));
     });
 
-    // 2. CORRECTION DE LA LOGIQUE DE PAIRING
+    // 2. Logique de Pairing
     app.get('/pair', async (req, res) => {
-        // On utilise 'number' pour être en accord avec ton fichier HTML
         const num = req.query.number; 
         
         if (!num) return res.status(400).json({ error: "Numéro requis" });
-
-        if (!marcoInstance) return res.status(503).json({ error: "Bot non prêt" });
+        if (!marcoInstance) return res.status(503).json({ error: "Le bot n'est pas encore initialisé" });
 
         try {
-            const code = await marcoInstance.requestPairingCode(num);
-            // On renvoie 'code' car ton HTML attend data.code
+            // Nettoyage du numéro (enlève les espaces et +)
+            const cleanedNum = num.replace(/[^0-9]/g, '');
+            const code = await marcoInstance.requestPairingCode(cleanedNum);
             res.status(200).json({ code: code }); 
         } catch (err) {
             console.error("Erreur Pairing:", err);
-            res.status(500).json({ error: "Erreur lors de la génération" });
+            res.status(500).json({ error: "Échec de la génération du code" });
         }
     });
 
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`🌍 Serveur de ${config.botName} en ligne sur le port ${PORT}`);
+    // 3. Démarrage sécurisé (évite l'erreur EADDRINUSE)
+    const server = app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🌍 Serveur ${config.botName} actif sur le port ${PORT}`);
+    });
+
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.log(`⚠️ Le port ${PORT} est occupé, nouvelle tentative...`);
+            setTimeout(() => {
+                server.close();
+                server.listen(PORT);
+            }, 2000);
+        }
     });
 };
 
