@@ -1,0 +1,12 @@
+# Session WhatsApp (Privé !)
+session_dark/
+auth_info_baileys/
+
+# Dépendances
+node_modules/
+
+# Logs et divers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
