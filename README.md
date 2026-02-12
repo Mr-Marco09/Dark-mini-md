@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <a href="#"><img src="https://img.shields.io" alt="Version"></a>
-  <a href="#"><img src="https://img.shields.io" alt="Maintenance"></a>
-  <a href="https://whatsapp.com/channel/0029VbASWFzHFxP6cbTkkz08"><img src="https://i.postimg.cc/v8fKxjGG/IMG-20260201-WA0107.jpg" alt="Canal"></a>
+  <a href="#"><img src="https://img.shields.io" width="200 alt="Version"></a>
+  <a href="#"><img src="https://img.shields.io" width="200 alt="Maintenance"></a>
+  <a href="https://whatsapp.com/channel/0029VbASWFzHFxP6cbTkkz08"><img src="https://i.postimg.cc/v8fKxjGG/IMG-20260201-WA0107.jpg" width="200 alt="Canal"></a>
 </p>
 
 ---
